@@ -1,0 +1,4 @@
+#!/bin/bash
+# Скрипт обновления сессии с использованием .keytab
+USER={{ ansible_user }}
+/usr/bin/kinit -kt /home/${USER}/{SCRIPT_PATH}/${USER},keytab ${USER}@{PRINCIPAL}

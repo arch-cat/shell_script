@@ -1,0 +1,48 @@
+---
+- name: HiveMetricCollector
+  hosts: all
+  remote_user: {USER}
+
+  tasks:
+    - name: "Create directory"
+      file:
+        path: "{{ item }}"
+        state: "directory"
+      loop:
+        - "$HOME/{SCRIPT_PATH}"
+        - "$HOME/{SCRIPT_PATH}/tmp"
+
+    - name: "Create .j2 shell script"
+      template:
+        src: "templates/get_keytab.j2"
+        dest: "$HOME/{SCRIPT_PATH}/get_keytab.sh"
+        mode: 0744
+
+    - name: "Copy script files"
+      copy:
+        src: "{{ item }}"
+        dest: "$HOME/{SCRIPT_PATH}/"
+        mode: 0744
+      loop:
+        - main.sh
+        - ${USER}.keytab
+
+    - name: "Run shell script ./main.sh in crontab"
+      cron:
+        name: "Run {SCRIPT_PATH}/main.sh"
+        minute: "0"
+        hour: "*/11"
+        day: "*"
+        month: "*"
+        weekday: "*"
+        job: "/bin/bash $HOME/{SCRIPT_PATH}/main.sh"
+
+    - name: "Run shell script ./get_keytab.sh"
+      cron:
+        name: "Run {SCRIPT_PATH}/get_keytab.sh"
+        minute: "0"
+        hour: "*/12"
+        day: "*"
+        month: "*"
+        weekday: "*"
+        job: "/bin/bash $HOME/{SCRIPT_PATH}/get_keytab.sh"
